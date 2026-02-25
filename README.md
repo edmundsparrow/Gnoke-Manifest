@@ -1,4 +1,4 @@
-# 🚐 Gnoke Manifest
+my# 🚐 Gnoke Manifest
 
 Book passengers. Generate manifests. Manage trips.
 A clean, offline-first web app for road transport operators.
@@ -20,7 +20,7 @@ A clean, offline-first web app for road transport operators.
 
 Open the app in any modern browser. No installation. No sign-up.
 
-👉 **[Live Demo](https://edmundsparrow.github.io/gnoke-manifest)**
+👉 **[Live Demo](https://edmundsparrow.github.io/Gnoke-Manifest)**
 
 Or clone and serve locally:
 ```bash
