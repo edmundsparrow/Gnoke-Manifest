@@ -20,7 +20,7 @@ A clean, offline-first web app for road transport operators.
 
 Open the app in any modern browser. No installation. No sign-up.
 
-👉 **[Live Demo](https://edmundsparrow.github.io/Gnoke-Manifest/)**
+👉 **[Live Demo](https://edmundsparrow.github.io/gnoke-manifest)**
 
 Or clone and serve locally:
 ```bash
@@ -48,8 +48,10 @@ Any country or region can be added — the data model is built for it.
 
 ## License
 
-© 2025 Edmund Sparrow — Gnoke Suite.
-All rights reserved. Contact before use in any commercial product.
+This project is licensed under the **GNU General Public License v3.0**.
+See [LICENSE](LICENSE) for full terms.
+
+© 2026 Edmund Sparrow — Gnoke Suite.
 
 ---
 
