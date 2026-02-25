@@ -1128,73 +1128,103 @@ function renderRecentTrips() {
         <span class="recent-seats ${seatsClass}">${seatsLabel}</span>
       </div>`;
 
-    if (!isCurrent) {
-      item.onclick = () => resumeTrip(t);
-    }
+    // Always tappable — including the active trip (re-restores the form)
+    item.onclick = () => resumeTrip(t);
     list.appendChild(item);
   });
 }
 
 function resumeTrip(tripRow) {
-  // Load full trip from DB
-  const trip = DBBooking.getTripByBookingCode(tripRow.booking_code);
+  fullRestore(tripRow.booking_code);
+}
+
+/* ── Full restore — works from any entry point ───────────────────────── */
+function fullRestore(bookingCode, silent = false) {
+  const trip = DBBooking.getTripByBookingCode(bookingCode);
   if (!trip) { toast('Trip not found', 'error'); return; }
 
-  // Restore state
+  // Capacity comes from the JOIN in getTripByBookingCode
+  const capacity   = trip.capacity || 0;
+  const passengers = DBBooking.getPassengersByTrip(trip.id).map(p => ({
+    id: p.id, name: p.name, phone: p.phone, gender: p.gender
+  }));
+  const isFull = passengers.length >= capacity;
+
+  // Restore all state
   state.bookingCode = trip.booking_code;
   state.tripId      = trip.id;
   state.routeId     = trip.route_id;
-  state.capacity    = tripRow.capacity;
-  state.passengers  = DBBooking.getPassengersByTrip(trip.id).map(p => ({
-    id: p.id, name: p.name, phone: p.phone, gender: p.gender
-  }));
-  const isFull = state.passengers.length >= state.capacity;
+  state.capacity    = capacity;
+  state.passengers  = passengers;
+  state.gender      = null;
 
-  // Update booking code display
+  // Booking code bar
   document.getElementById('bookingCode').textContent = state.bookingCode;
   saveActiveCode(state.bookingCode);
 
-  // Restore route dropdowns if possible
-  if (trip.route_id) {
-    const routeInfo = DB.query(`
-      SELECT r.departure_id, r.destination_id, r.vehicle_id
-      FROM routes r WHERE r.id = ?
-    `, [trip.route_id])[0];
+  // Route dropdowns
+  const routeInfo = DB.query(`
+    SELECT r.departure_id, r.destination_id, r.vehicle_id
+    FROM routes r WHERE r.id = ?
+  `, [trip.route_id])[0];
 
-    if (routeInfo) {
-      document.getElementById('departure').value   = routeInfo.departure_id;
-      document.getElementById('destination').value = routeInfo.destination_id;
-      document.getElementById('vehicleType').value = routeInfo.vehicle_id;
-      document.getElementById('vehicleNo').value   = trip.vehicle_no;
-      document.getElementById('acToggle').checked  = !!trip.has_ac;
-      filterOptions();
-      renderRouteStrip();
-      onRouteChange();
-    }
+  if (routeInfo) {
+    document.getElementById('departure').value   = routeInfo.departure_id;
+    document.getElementById('destination').value = routeInfo.destination_id;
+    document.getElementById('vehicleType').value = routeInfo.vehicle_id;
+    filterOptions();
+    renderRouteStrip();
+    onRouteChange();
   }
 
-  // Restore driver fields
-  document.getElementById('driverName').value  = trip.driver_name  || '';
-  document.getElementById('driverPhone').value = trip.driver_phone || '';
+  // Vehicle and driver
+  document.getElementById('vehicleNo').value    = trip.vehicle_no    || '';
+  document.getElementById('acToggle').checked   = !!trip.has_ac;
+  document.getElementById('driverName').value   = trip.driver_name   || '';
+  document.getElementById('driverPhone').value  = trip.driver_phone  || '';
 
+  // Clear passenger form, restore passenger list
+  clearPaxForm();
   setFullState(isFull);
   renderPaxList();
   renderRecentTrips();
-  toast(`Resumed ${state.bookingCode}`, 'success');
+
+  if (!silent) toast(`Resumed ${state.bookingCode}`, 'success');
 }
 
 /* ── New trip ───────────────────────────────────────────────────────── */
 function newTrip() {
   state.bookingCode = DB.generateBookingCode();
   state.tripId      = null;
+  state.routeId     = null;
+  state.capacity    = 0;
   state.passengers  = [];
   state.gender      = null;
   setFullState(false);
 
+  // Booking code bar
   document.getElementById('bookingCode').textContent = state.bookingCode;
+  saveActiveCode(state.bookingCode);
+
+  // Clear all trip fields
+  document.getElementById('departure').value    = '';
+  document.getElementById('destination').value  = '';
+  document.getElementById('vehicleType').value  = '';
+  document.getElementById('vehicleNo').value    = '';
+  document.getElementById('acToggle').checked   = false;
+  document.getElementById('driverName').value   = '';
+  document.getElementById('driverPhone').value  = '';
+  document.getElementById('priceDisplay').textContent = '—';
+
+  // Clear route strip back to placeholder
+  document.getElementById('routeStrip').innerHTML =
+    '<span class="route-placeholder">Select departure &amp; destination</span>';
+
+  // Clear passenger section
   document.getElementById('paxList').innerHTML = '';
   document.getElementById('paxCount').textContent = '0';
-  saveActiveCode(state.bookingCode);
+  clearPaxForm();
+
   renderSeatGrid();
   renderSeatIndicator();
   renderRecentTrips();
@@ -1286,43 +1316,35 @@ async function init() {
     populatePlaces();
     populateVehicles();
 
-    // Restore active trip if one was in progress
+    // Restore active trip if one was in progress, otherwise start fresh
     const savedCode = loadActiveCode();
     if (savedCode) {
       const trip = DBBooking.getTripByBookingCode(savedCode);
-      if (trip) {
+      if (trip && trip.capacity) {
         const paxCount = DBBooking.getPassengersByTrip(trip.id).length;
-        const capResult = DB.query(`
-          SELECT v.capacity FROM trips t
-          JOIN routes r ON t.route_id = r.id
-          JOIN vehicles v ON r.vehicle_id = v.id
-          WHERE t.id = ?
-        `, [trip.id]);
-        const capacity = capResult[0]?.capacity || 0;
-        if (paxCount < capacity) {
-          // Resume silently — don't full-restore, just show the code
-          // and let the recent panel handle full resume on tap
-          state.bookingCode = savedCode;
-          document.getElementById('bookingCode').textContent = savedCode;
-          toast('Previous trip resumed — tap code to continue', '');
+        if (paxCount < trip.capacity) {
+          // Fully restore — route, driver, passengers, all fields
+          fullRestore(savedCode, true);
         } else {
-          // Was full — start fresh
+          // Last trip was full — start a new one
           state.bookingCode = DB.generateBookingCode();
           document.getElementById('bookingCode').textContent = state.bookingCode;
           saveActiveCode(state.bookingCode);
+          renderRecentTrips();
         }
       } else {
+        // Code no longer exists in DB — start fresh
         state.bookingCode = DB.generateBookingCode();
         document.getElementById('bookingCode').textContent = state.bookingCode;
         saveActiveCode(state.bookingCode);
+        renderRecentTrips();
       }
     } else {
       state.bookingCode = DB.generateBookingCode();
       document.getElementById('bookingCode').textContent = state.bookingCode;
       saveActiveCode(state.bookingCode);
+      renderRecentTrips();
     }
-
-    renderRecentTrips();
 
   } catch (e) {
     document.getElementById('db-loader').querySelector('p').textContent = 'ERROR: ' + e.message;
