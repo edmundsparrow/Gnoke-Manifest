@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>History — Manifest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0f1117;
+      --surface:      #1a1d27;
+      --surface2:     #22263a;
+      --border:       #2a2f45;
+      --amber:        #f59e0b;
+      --amber-dim:    #b37200;
+      --amber-glow:   rgba(245,158,11,0.12);
+      --text:         #e8eaf0;
+      --muted:        #6b7280;
+      --success:      #10b981;
+      --success-glow: rgba(16,185,129,0.12);
+      --danger:       #ef4444;
+      --danger-dim:   rgba(239,68,68,0.12);
+      --radius:       6px;
+      --nav-h:        60px;
+      --font-mono:    'DM Mono', monospace;
+      --font-sans:    'DM Sans', sans-serif;
+    }
+
+    :root.light {
+      --bg:         #f4f5f7;
+      --surface:    #ffffff;
+      --surface2:   #eef0f4;
+      --border:     #dde0e8;
+      --text:       #1a1d27;
+      --muted:      #8a92a0;
+      --amber-glow: rgba(180,110,0,0.08);
+      --success-glow: rgba(16,185,129,0.08);
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────────── */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-header h1 {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .page-header .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Stats bar ───────────────────────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-cell {
+      background: var(--surface);
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--amber);
+    }
+    .stat-value.green { color: var(--success); }
+
+    /* ── Filter bar ──────────────────────────────────────────────────── */
+    .filter-bar {
+      padding: 10px 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .filter-bar input,
+    .filter-bar select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    .filter-bar input { flex: 1; min-width: 120px; }
+    .filter-bar input::placeholder { color: var(--muted); }
+    .filter-bar input:focus,
+    .filter-bar select:focus { border-color: var(--amber); }
+    .filter-bar select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border: none;
+      border-radius: var(--radius);
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:active { transform: scale(0.97); }
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    /* ── Trip cards ──────────────────────────────────────────────────── */
+    .trip-list {
+      padding: 10px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .trip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .trip-card:hover { border-color: var(--amber); }
+    .trip-card.expanded { border-color: var(--amber); }
+
+    /* Card header row */
+    .tc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 14px;
+      gap: 10px;
+    }
+    .tc-head-left {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .tc-route {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tc-meta {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tc-head-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .tc-revenue {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--success);
+    }
+    .tc-pax-badge {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 2px 7px;
+    }
+
+    /* Expand indicator */
+    .tc-chevron {
+      color: var(--muted);
+      font-size: 0.7rem;
+      transition: transform 0.2s;
+      margin-left: 4px;
+    }
+    .trip-card.expanded .tc-chevron { transform: rotate(180deg); }
+
+    /* Expanded detail */
+    .tc-detail {
+      display: none;
+      border-top: 1px solid var(--border);
+      animation: fadeIn 0.15s ease;
+    }
+    .trip-card.expanded .tc-detail { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Info strip */
+    .tc-info-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .tc-info-cell {
+      padding: 9px 14px;
+      border-right: 1px solid var(--border);
+    }
+    .tc-info-cell:nth-child(even) { border-right: none; }
+    .tc-info-cell:nth-child(n+3)  { border-top: 1px solid var(--border); }
+    .tci-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .tci-val {
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+    .tci-val.mono {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+    }
+
+    /* Passenger mini-list */
+    .tc-pax-list {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .tc-pax-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+    .tc-pax-row .pn { font-weight: 500; }
+    .tc-pax-row .pp {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .tc-pax-row .pg {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .tc-pax-row .pg.male   { color: #60a5fa; }
+    .tc-pax-row .pg.female { color: #f472b6; }
+
+    /* Card action row */
+    .tc-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 14px;
+      gap: 8px;
+    }
+    .tc-booking-code {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+    .tc-action-btns { display: flex; gap: 6px; }
+    .btn-sm {
+      font-size: 0.72rem;
+      padding: 5px 10px;
+    }
+    .btn-view {
+      background: var(--amber-glow);
+      color: var(--amber);
+      border: 1px solid rgba(245,158,11,0.2);
+    }
+    .btn-del {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+
+    /* ── Total footer ────────────────────────────────────────────────── */
+    .total-footer {
+      position: sticky;
+      bottom: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 9;
+    }
+    .total-footer .tf-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .total-footer .tf-val {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--success);
+    }
+
+    /* ── Empty state ─────────────────────────────────────────────────── */
+    .empty-state {
+      margin: 50px 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 2.4rem; margin-bottom: 10px; opacity: 0.4; }
+    .empty-state p {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ── Toast ───────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 56px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error   { border-color: var(--danger);  color: var(--danger);  }
+
+    /* ── Bottom nav ──────────────────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 20;
+    }
+    .bottom-nav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.15s;
+      position: relative;
+    }
+    .bottom-nav a .nav-icon { font-size: 1.1rem; line-height: 1; }
+    .bottom-nav a:hover { color: var(--text); }
+    .bottom-nav a.active { color: var(--amber); }
+    .bottom-nav a.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 0 0 3px 3px;
+    }
+
+    /* ── DB loader ───────────────────────────────────────────────────── */
+    #db-loader {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 200;
+      transition: opacity 0.3s;
+    }
+    #db-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-ring {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #db-loader p {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (min-width: 600px) {
+      .trip-list { max-width: 560px; margin: 0 auto; }
+      .filter-bar { max-width: 560px; margin: 0 auto; }
+      .stats-bar  { max-width: 560px; margin: 0 auto; border: 1px solid var(--border); }
+      .page-header { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- DB loader -->
+<div id="db-loader">
+  <div class="loader-ring"></div>
+  <p>LOADING DATABASE...</p>
+</div>
+
+<!-- Page header -->
+<header class="page-header">
+  <div class="dot"></div>
+  <h1>Trip History</h1>
+  <button onclick="toggleTheme()" title="Toggle theme" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:4px 10px;font-size:1rem;line-height:1;cursor:pointer">&#9680;</button>
+</header>
+
+<!-- Stats bar -->
+<div class="stats-bar">
+  <div class="stat-cell">
+    <span class="stat-label">Trips</span>
+    <span class="stat-value" id="statTrips">—</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-label">Passengers</span>
+    <span class="stat-value" id="statPax">—</span>
+  </div>
+  <div class="stat-cell">
+    <span class="stat-label">Revenue</span>
+    <span class="stat-value green" id="statRevenue">—</span>
+  </div>
+</div>
+
+<!-- Filter bar -->
+<div class="filter-bar">
+  <input type="text" id="searchInput" placeholder="Search route or driver..." />
+  <select id="dateFilter" onchange="applyFilters()">
+    <option value="">All Dates</option>
+  </select>
+  <select id="routeFilter" onchange="applyFilters()">
+    <option value="">All Routes</option>
+  </select>
+  <button class="btn-ghost" onclick="clearFilters()">Reset</button>
+</div>
+
+<!-- Trip list -->
+<div class="trip-list" id="tripList"></div>
+
+<!-- Empty state -->
+<div class="empty-state" id="emptyState" style="display:none">
+  <div class="icon">◷</div>
+  <p>NO TRIPS RECORDED YET</p>
+</div>
+
+<!-- Total footer -->
+<div class="total-footer" id="totalFooter" style="display:none">
+  <span class="tf-label">Filtered Total</span>
+  <span class="tf-val" id="totalRevenue">₦0</span>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a href="main.html">
+    <span class="nav-icon">⊞</span>Booking
+  </a>
+  <a href="preview.html">
+    <span class="nav-icon">◫</span>Manifest
+  </a>
+  <a href="history.html" class="active">
+    <span class="nav-icon">◷</span>History
+  </a>
+  <a href="config.html">
+    <span class="nav-icon">⚙</span>Config
+  </a>
+  <a href="help.html">
+    <span class="nav-icon">?</span>Help
+  </a>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script src="scripts/db-core.js"></script>
+<script src="scripts/db-history.js"></script>
+
+<script>
+/* ── Theme ──────────────────────────────────────────────────────────── */
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('manifest-theme', isLight ? 'light' : 'dark');
+}
+(function loadTheme() {
+  if (localStorage.getItem('manifest-theme') === 'light')
+    document.documentElement.classList.add('light');
+})();
+
+/* ── Utils ──────────────────────────────────────────────────────────── */
+const fmt = n => n != null ? `₦${Number(n).toLocaleString('en-NG')}` : '—';
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-NG', {
+    day: '2-digit', month: 'short', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '';
+  return new Date(iso).toLocaleDateString('en-NG', {
+    day: '2-digit', month: 'short', year: 'numeric'
+  });
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────── */
+let _tt;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.className = '', 2600);
+}
+
+/* ── State ──────────────────────────────────────────────────────────── */
+let allTrips    = [];
+let filtered    = [];
+let expandedId  = null;
+
+/* ── Filters ────────────────────────────────────────────────────────── */
+function populateFilters() {
+  // Dates
+  const dates   = DBHistory.getTripDates();
+  const dateSel = document.getElementById('dateFilter');
+  dateSel.innerHTML = '<option value="">All Dates</option>';
+  dates.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d; o.textContent = fmtDateShort(d);
+    dateSel.appendChild(o);
+  });
+
+  // Routes — unique pairs from loaded trips
+  const routeSel = document.getElementById('routeFilter');
+  const seen = new Set();
+  routeSel.innerHTML = '<option value="">All Routes</option>';
+  allTrips.forEach(t => {
+    const key = `${t.departure}→${t.destination}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      const o = document.createElement('option');
+      o.value = key; o.textContent = key.replace('→', ' → ');
+      routeSel.appendChild(o);
+    }
+  });
+}
+
+function applyFilters() {
+  const search    = document.getElementById('searchInput').value.toLowerCase().trim();
+  const dateVal   = document.getElementById('dateFilter').value;
+  const routeVal  = document.getElementById('routeFilter').value;
+
+  filtered = allTrips.filter(t => {
+    const routeKey = `${t.departure}→${t.destination}`;
+    const matchSearch = !search ||
+      t.departure.toLowerCase().includes(search)    ||
+      t.destination.toLowerCase().includes(search)  ||
+      t.driver_name.toLowerCase().includes(search)  ||
+      t.booking_code.toLowerCase().includes(search) ||
+      t.vehicle_no.toLowerCase().includes(search);
+    const matchDate  = !dateVal  || t.booked_at?.startsWith(dateVal);
+    const matchRoute = !routeVal || routeKey === routeVal;
+    return matchSearch && matchDate && matchRoute;
+  });
+
+  renderList();
+  renderStats();
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value  = '';
+  document.getElementById('dateFilter').value   = '';
+  document.getElementById('routeFilter').value  = '';
+  filtered = [...allTrips];
+  renderList();
+  renderStats();
+}
+
+/* ── Stats ──────────────────────────────────────────────────────────── */
+function renderStats() {
+  const trips    = filtered.length;
+  const pax      = filtered.reduce((s, t) => s + (t.passenger_count || 0), 0);
+  const revenue  = DBHistory.getTotalRevenue(filtered);
+
+  document.getElementById('statTrips').textContent   = trips;
+  document.getElementById('statPax').textContent     = pax;
+  document.getElementById('statRevenue').textContent = fmt(revenue);
+
+  const footer = document.getElementById('totalFooter');
+  const total  = document.getElementById('totalRevenue');
+  if (trips > 0) {
+    footer.style.display = '';
+    total.textContent    = fmt(revenue);
+  } else {
+    footer.style.display = 'none';
+  }
+}
+
+/* ── Trip list ──────────────────────────────────────────────────────── */
+function renderList() {
+  const list  = document.getElementById('tripList');
+  const empty = document.getElementById('emptyState');
+  list.innerHTML = '';
+
+  if (!filtered.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  filtered.forEach(t => {
+    const card = buildCard(t);
+    list.appendChild(card);
+  });
+}
+
+function buildCard(t) {
+  const card     = document.createElement('div');
+  const isExpand = expandedId === t.id;
+  card.className = `trip-card${isExpand ? ' expanded' : ''}`;
+  card.dataset.id = t.id;
+
+  const revenue   = t.total_revenue ? fmt(t.total_revenue) : '—';
+  const acLabel   = t.has_ac ? 'AC' : 'No AC';
+  const paxCount  = t.passenger_count || 0;
+  const paxLabel  = `${paxCount} / ${t.capacity} pax`;
+
+  // Fetch passengers if expanded
+  let paxRows = '';
+  if (isExpand) {
+    const passengers = DB.query(
+      'SELECT * FROM passengers WHERE trip_id = ? ORDER BY id',
+      [t.id]
+    );
+    paxRows = passengers.map((p, i) => `
+      <div class="tc-pax-row">
+        <span class="pn">${i + 1}. ${p.name}</span>
+        <span class="pp">${p.phone || '—'}</span>
+        <span class="pg ${p.gender}">${p.gender || '—'}</span>
+      </div>`).join('');
+  }
+
+  card.innerHTML = `
+    <div class="tc-head">
+      <div class="tc-head-left">
+        <span class="tc-route">${t.departure} → ${t.destination}</span>
+        <span class="tc-meta">${fmtDate(t.booked_at)} · ${t.vehicle_type} · ${acLabel}</span>
+      </div>
+      <div class="tc-head-right">
+        <span class="tc-revenue">${revenue}</span>
+        <span class="tc-pax-badge">${paxLabel}</span>
+      </div>
+      <span class="tc-chevron">▾</span>
+    </div>
+
+    <div class="tc-detail">
+      <div class="tc-info-strip">
+        <div class="tc-info-cell">
+          <div class="tci-label">Driver</div>
+          <div class="tci-val">${t.driver_name}</div>
+        </div>
+        <div class="tc-info-cell">
+          <div class="tci-label">Driver Phone</div>
+          <div class="tci-val mono">${t.driver_phone || '—'}</div>
+        </div>
+        <div class="tc-info-cell">
+          <div class="tci-label">Vehicle No.</div>
+          <div class="tci-val mono">${t.vehicle_no}</div>
+        </div>
+        <div class="tc-info-cell">
+          <div class="tci-label">Fare / Seat</div>
+          <div class="tci-val mono">${fmt(t.fare)}</div>
+        </div>
+      </div>
+
+      ${paxRows ? `<div class="tc-pax-list">${paxRows}</div>` : ''}
+
+      <div class="tc-actions">
+        <span class="tc-booking-code">${t.booking_code}</span>
+        <div class="tc-action-btns">
+          <button class="btn-sm btn-view" onclick="viewManifest('${t.booking_code}', event)">
+            View Manifest
+          </button>
+          <button class="btn-sm btn-del" onclick="deleteTrip(${t.id}, event)">
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  card.addEventListener('click', () => toggleCard(t.id));
+  return card;
+}
+
+function toggleCard(id) {
+  expandedId = expandedId === id ? null : id;
+  renderList();
+}
+
+/* ── Actions ────────────────────────────────────────────────────────── */
+function viewManifest(code, e) {
+  e.stopPropagation();
+  window.location.href = `preview.html?code=${encodeURIComponent(code)}`;
+}
+
+async function deleteTrip(id, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this trip and all its passenger records? This cannot be undone.')) return;
+  try {
+    await DBHistory.deleteTrip(id);
+    allTrips  = allTrips.filter(t => t.id !== id);
+    filtered  = filtered.filter(t => t.id !== id);
+    expandedId = null;
+    populateFilters();
+    renderList();
+    renderStats();
+    toast('Trip deleted', 'success');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+/* ── Search on type ─────────────────────────────────────────────────── */
+let _st;
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(_st);
+  _st = setTimeout(applyFilters, 220);
+});
+
+/* ── Init ───────────────────────────────────────────────────────────── */
+async function init() {
+  try {
+    await DB.init({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
+    });
+
+    allTrips = DBHistory.getTrips();
+    filtered = [...allTrips];
+
+    // Check if arriving from preview link with a code
+    const urlCode = new URLSearchParams(window.location.search).get('code');
+    if (urlCode) {
+      document.getElementById('searchInput').value = urlCode;
+      applyFilters();
+    }
+
+    populateFilters();
+    renderList();
+    renderStats();
+
+  } catch (e) {
+    document.getElementById('db-loader').querySelector('p').textContent = 'ERROR: ' + e.message;
+    return;
+  }
+
+  const loader = document.getElementById('db-loader');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.remove(), 400);
+}
+
+init();
+</script>
+</body>
+</html>

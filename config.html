@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Config — Manifest</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0f1117;
+      --surface:    #1a1d27;
+      --surface2:   #22263a;
+      --border:     #2a2f45;
+      --amber:      #f59e0b;
+      --amber-dim:  #b37200;
+      --amber-glow: rgba(245,158,11,0.12);
+      --text:       #e8eaf0;
+      --muted:      #6b7280;
+      --success:    #10b981;
+      --danger:     #ef4444;
+      --danger-dim: rgba(239,68,68,0.12);
+      --radius:     6px;
+      --nav-h:      60px;
+      --font-mono:  'DM Mono', monospace;
+      --font-sans:  'DM Sans', sans-serif;
+    }
+
+    :root.light {
+      --bg:         #f4f5f7;
+      --surface:    #ffffff;
+      --surface2:   #eef0f4;
+      --border:     #dde0e8;
+      --text:       #1a1d27;
+      --muted:      #8a92a0;
+      --amber-glow: rgba(180,110,0,0.08);
+    }
+
+
+    :root.light {
+      --bg:         #f4f5f7;
+      --surface:    #ffffff;
+      --surface2:   #eef0f4;
+      --border:     #dde0e8;
+      --text:       #1a1d27;
+      --muted:      #8a92a0;
+      --amber-glow: rgba(180,110,0,0.08);
+    }
+
+    html { font-size: 15px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────────── */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-header h1 {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .page-header .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity: 1; }
+      50%      { opacity: 0.3; }
+    }
+
+    /* ── Sections ────────────────────────────────────────────────────── */
+    .section {
+      margin: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+    }
+    .section-header h2 {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .section-header .chevron {
+      color: var(--muted);
+      font-size: 0.8rem;
+      transition: transform 0.2s;
+    }
+    .section.open .chevron { transform: rotate(180deg); }
+
+    .section-body {
+      display: none;
+      padding: 14px;
+      animation: fadeIn 0.15s ease;
+    }
+    .section.open .section-body { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Form elements ───────────────────────────────────────────────── */
+    .field { margin-bottom: 12px; }
+    .field:last-child { margin-bottom: 0; }
+
+    label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="number"],
+    select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 0.9rem;
+      padding: 10px 12px;
+      outline: none;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input:focus, select:focus {
+      border-color: var(--amber);
+    }
+    input::placeholder { color: var(--muted); }
+    input[readonly] {
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .row-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── Price row with AC toggle ─────────────────────────────────────── */
+    .price-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .ac-toggle {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 2px;
+    }
+    .ac-toggle label {
+      margin: 0;
+      font-size: 0.65rem;
+    }
+    .toggle-switch {
+      position: relative;
+      width: 38px;
+      height: 22px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-switch .track {
+      position: absolute;
+      inset: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .toggle-switch .track::after {
+      content: '';
+      position: absolute;
+      left: 3px; top: 3px;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: transform 0.2s, background 0.2s;
+    }
+    .toggle-switch input:checked + .track {
+      background: var(--amber-glow);
+      border-color: var(--amber);
+    }
+    .toggle-switch input:checked + .track::after {
+      background: var(--amber);
+      transform: translateX(16px);
+    }
+
+    /* ── Buttons ─────────────────────────────────────────────────────── */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background: var(--amber);
+      color: #0f1117;
+      flex: 1;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+
+    .btn-ghost {
+      background: var(--surface2);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    .btn-danger {
+      background: var(--danger-dim);
+      color: var(--danger);
+      border: 1px solid rgba(239,68,68,0.2);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,0.2); }
+
+    .btn-sm {
+      font-size: 0.75rem;
+      padding: 6px 10px;
+    }
+
+    /* ── Info chips ──────────────────────────────────────────────────── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 9px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--amber);
+    }
+
+    .seats-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--amber);
+    }
+    .seats-chip .label { color: var(--muted); font-size: 0.7rem; }
+
+    /* ── Route table ─────────────────────────────────────────────────── */
+    .route-table-wrap {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody tr.selected { background: var(--amber-glow); }
+    tbody td {
+      padding: 10px 10px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .price-cell {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--amber);
+    }
+    .price-na { color: var(--muted); }
+
+    /* ── Status toast ────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error   { border-color: var(--danger);  color: var(--danger);  }
+
+    /* ── Lock state for company name ────────────────────────────────── */
+    .locked-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+    }
+    .locked-display span {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .locked-display button {
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 4px;
+    }
+
+    /* ── Vehicle list pills ──────────────────────────────────────────── */
+    .vehicle-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .vehicle-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 5px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: border-color 0.1s;
+    }
+    .vehicle-pill:hover { border-color: var(--amber); }
+    .vehicle-pill.selected {
+      border-color: var(--amber);
+      background: var(--amber-glow);
+      color: var(--amber);
+    }
+    .vehicle-pill .cap {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+    .vehicle-pill.selected .cap { color: var(--amber-dim); }
+
+    /* ── Divider ─────────────────────────────────────────────────────── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 14px 0;
+    }
+
+    /* ── Bottom nav ──────────────────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 20;
+    }
+    .bottom-nav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.15s;
+      position: relative;
+    }
+    .bottom-nav a .nav-icon { font-size: 1.1rem; line-height: 1; }
+    .bottom-nav a:hover { color: var(--text); }
+    .bottom-nav a.active { color: var(--amber); }
+    .bottom-nav a.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 0 0 3px 3px;
+    }
+
+    /* ── DB loading overlay ──────────────────────────────────────────── */
+    #db-loader {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 200;
+      transition: opacity 0.3s;
+    }
+    #db-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-ring {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #db-loader p {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (min-width: 600px) {
+      .section { margin: 14px auto; max-width: 560px; }
+      .page-header { justify-content: center; }
+    }
+    @media (min-width: 900px) {
+      .sections-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 14px;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 14px;
+      }
+      .section { margin: 14px 0; max-width: none; }
+      .section.full-width { grid-column: 1 / -1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- DB loading overlay -->
+<div id="db-loader">
+  <div class="loader-ring"></div>
+  <p>LOADING DATABASE...</p>
+</div>
+
+<!-- Page header -->
+<header class="page-header">
+  <div class="dot"></div>
+  <h1>Configuration</h1>
+  <button id="theme-btn" onclick="toggleTheme()" title="Toggle theme" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:4px 10px;font-size:1rem;line-height:1;cursor:pointer">&#9680;</button>
+</header>
+
+<main>
+  <div class="sections-grid">
+
+    <!-- ── Company ──────────────────────────────────────────────────── -->
+    <div class="section open" id="sec-company">
+      <div class="section-header" onclick="toggleSection('sec-company')">
+        <h2>Company</h2>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="field" id="company-field">
+          <!-- Populated by JS -->
+        </div>
+        <div class="btn-row" id="company-btn-row" style="display:none">
+          <button class="btn-primary" onclick="saveCompany()">Save Company Name</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Vehicles ──────────────────────────────────────────────────── -->
+    <div class="section open" id="sec-vehicles">
+      <div class="section-header" onclick="toggleSection('sec-vehicles')">
+        <h2>Vehicle Types</h2>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+
+        <!-- Existing vehicles as pills -->
+        <div class="vehicle-list" id="vehicle-list"></div>
+
+        <hr class="divider" />
+
+        <!-- Add / Edit form -->
+        <div class="row-2">
+          <div class="field">
+            <label>Type</label>
+            <input type="text" id="vehicle-type" placeholder="e.g. Hiace" autocomplete="off" />
+          </div>
+          <div class="field">
+            <label>Seats</label>
+            <input type="number" id="vehicle-seats" placeholder="14" min="1" max="100" />
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-primary" id="vehicle-save-btn" onclick="saveVehicle()">Add Vehicle</button>
+          <button class="btn-ghost" id="vehicle-cancel-btn" style="display:none" onclick="cancelVehicleEdit()">Cancel</button>
+          <button class="btn-danger btn-sm" id="vehicle-del-btn" style="display:none" onclick="deleteVehicle()">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Route Config ──────────────────────────────────────────────── -->
+    <div class="section open" id="sec-routes">
+      <div class="section-header" onclick="toggleSection('sec-routes')">
+        <h2>Route Config</h2>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+
+        <div class="row-2">
+          <div class="field">
+            <label>Departure</label>
+            <input type="text" id="route-departure" placeholder="e.g. Calabar" autocomplete="off" list="places-list" />
+          </div>
+          <div class="field">
+            <label>Destination</label>
+            <input type="text" id="route-destination" placeholder="e.g. Abuja" autocomplete="off" list="places-list" />
+          </div>
+        </div>
+        <datalist id="places-list"></datalist>
+
+        <div class="field">
+          <label>Vehicle</label>
+          <select id="route-vehicle" onchange="onRouteVehicleChange()">
+            <option value="">Select vehicle type</option>
+          </select>
+        </div>
+
+        <div class="row-2" style="margin-bottom:10px; align-items:center">
+          <div class="seats-chip" id="route-seats-chip">
+            <span class="label">SEATS</span>
+            <span id="route-seats-val">—</span>
+          </div>
+        </div>
+
+        <div class="price-row">
+          <div class="field" style="margin:0">
+            <label>Price (No AC)</label>
+            <input type="number" id="price-no-ac" placeholder="0" min="0" />
+          </div>
+          <div class="field" style="margin:0">
+            <label>Price (AC)</label>
+            <input type="number" id="price-ac" placeholder="0" min="0" />
+          </div>
+          <div class="ac-toggle">
+            <label>AC</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="route-ac" />
+              <span class="track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-primary" onclick="saveRoute()">Save Route</button>
+          <button class="btn-ghost" onclick="clearRouteForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Registered Routes ─────────────────────────────────────────── -->
+    <div class="section open full-width" id="sec-route-list">
+      <div class="section-header" onclick="toggleSection('sec-route-list')">
+        <h2>Registered Routes</h2>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body" style="padding:0">
+        <div class="route-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Vehicle</th>
+                <th>No AC</th>
+                <th>AC</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="route-tbody"></tbody>
+          </table>
+        </div>
+        <div id="route-empty" style="padding:20px;text-align:center;color:var(--muted);font-size:0.8rem;display:none">
+          No routes configured yet
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sections-grid -->
+</main>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a href="main.html">
+    <span class="nav-icon">⊞</span>Booking
+  </a>
+  <a href="preview.html">
+    <span class="nav-icon">◫</span>Manifest
+  </a>
+  <a href="history.html">
+    <span class="nav-icon">◷</span>History
+  </a>
+  <a href="config.html" class="active">
+    <span class="nav-icon">⚙</span>Config
+  </a>
+  <a href="help.html">
+    <span class="nav-icon">?</span>Help
+  </a>
+</nav>
+
+<!-- sql.js (load from CDN or local wasm folder) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script src="scripts/db-core.js"></script>
+<script src="scripts/db-config.js"></script>
+
+<script>
+/* ── Local utils (safe before DB.init) ─────────────────────────────── */
+const fmt = n => n != null ? `₦${Number(n).toLocaleString('en-NG')}` : null;
+
+/* ── State ──────────────────────────────────────────────────────────── */
+let selectedVehicleId = null;
+let editingVehicle    = null;
+let selectedRouteId   = null;
+
+/* ── Section accordion ──────────────────────────────────────────────── */
+function toggleSection(id) {
+  document.getElementById(id).classList.toggle('open');
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────── */
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `show ${type}`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.className = '', 2400);
+}
+
+/* ── Company ────────────────────────────────────────────────────────── */
+function renderCompany() {
+  const company  = DBConfig.getCompany();
+  const field    = document.getElementById('company-field');
+  const btnRow   = document.getElementById('company-btn-row');
+
+  if (company) {
+    field.innerHTML = `
+      <div class="locked-display">
+        <span>${company.name}</span>
+        <button onclick="unlockCompany()">Edit</button>
+      </div>`;
+    btnRow.style.display = 'none';
+  } else {
+    field.innerHTML = `<input type="text" id="company-name-input" placeholder="Enter company name" />`;
+    btnRow.style.display = 'flex';
+  }
+}
+
+function unlockCompany() {
+  const company = DBConfig.getCompany();
+  const field   = document.getElementById('company-field');
+  const btnRow  = document.getElementById('company-btn-row');
+  field.innerHTML = `<input type="text" id="company-name-input" value="${company.name}" />`;
+  btnRow.style.display = 'flex';
+  document.getElementById('company-name-input').focus();
+}
+
+async function saveCompany() {
+  const input = document.getElementById('company-name-input');
+  const name  = input?.value?.trim();
+  if (!name) { toast('Enter a company name', 'error'); return; }
+  try {
+    await DBConfig.saveCompany(name);
+    renderCompany();
+    toast('Company name saved', 'success');
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+/* ── Vehicles ───────────────────────────────────────────────────────── */
+function renderVehicles() {
+  const list     = document.getElementById('vehicle-list');
+  const vehicles = DBConfig.getVehicles();
+  const select   = document.getElementById('route-vehicle');
+
+  // Pills
+  list.innerHTML = vehicles.length ? '' : '<span style="color:var(--muted);font-size:0.8rem">No vehicles yet</span>';
+  vehicles.forEach(v => {
+    const pill = document.createElement('div');
+    pill.className = `vehicle-pill${v.id === selectedVehicleId ? ' selected' : ''}`;
+    pill.dataset.id = v.id;
+    pill.innerHTML = `${v.type}<span class="cap">${v.capacity}</span>`;
+    pill.onclick = () => selectVehicle(v);
+    list.appendChild(pill);
+  });
+
+  // Route vehicle dropdown
+  const prev = select.value;
+  select.innerHTML = '<option value="">Select vehicle type</option>';
+  vehicles.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.id;
+    opt.textContent = v.type;
+    opt.dataset.capacity = v.capacity;
+    select.appendChild(opt);
+  });
+  if (prev) select.value = prev;
+
+  // Places datalist
+  renderPlacesDatalist();
+}
+
+function selectVehicle(v) {
+  selectedVehicleId = v.id;
+  editingVehicle    = v;
+  document.getElementById('vehicle-type').value  = v.type;
+  document.getElementById('vehicle-seats').value = v.capacity;
+  document.getElementById('vehicle-save-btn').textContent  = 'Update Vehicle';
+  document.getElementById('vehicle-cancel-btn').style.display = '';
+  document.getElementById('vehicle-del-btn').style.display    = '';
+  renderVehicles();
+  document.getElementById('vehicle-type').focus();
+}
+
+function cancelVehicleEdit() {
+  selectedVehicleId = null;
+  editingVehicle    = null;
+  document.getElementById('vehicle-type').value  = '';
+  document.getElementById('vehicle-seats').value = '';
+  document.getElementById('vehicle-save-btn').textContent  = 'Add Vehicle';
+  document.getElementById('vehicle-cancel-btn').style.display = 'none';
+  document.getElementById('vehicle-del-btn').style.display    = 'none';
+  renderVehicles();
+}
+
+async function saveVehicle() {
+  const type  = document.getElementById('vehicle-type').value.trim();
+  const seats = document.getElementById('vehicle-seats').value;
+  try {
+    if (editingVehicle) {
+      await DBConfig.updateVehicle(editingVehicle.id, type, seats);
+      toast('Vehicle updated', 'success');
+    } else {
+      await DBConfig.addVehicle(type, seats);
+      toast('Vehicle added', 'success');
+    }
+    cancelVehicleEdit();
+    renderVehicles();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+async function deleteVehicle() {
+  if (!editingVehicle) return;
+  if (!confirm(`Delete "${editingVehicle.type}"?`)) return;
+  try {
+    await DBConfig.deleteVehicle(editingVehicle.id);
+    toast('Vehicle deleted', 'success');
+    cancelVehicleEdit();
+    renderVehicles();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+/* ── Routes ─────────────────────────────────────────────────────────── */
+function renderPlacesDatalist() {
+  const dl     = document.getElementById('places-list');
+  const places = DBConfig.getPlaces();
+  dl.innerHTML = places.map(p => `<option value="${p.name}">`).join('');
+}
+
+function onRouteVehicleChange() {
+  const sel = document.getElementById('route-vehicle');
+  const opt = sel.options[sel.selectedIndex];
+  document.getElementById('route-seats-val').textContent =
+    opt?.dataset?.capacity || '—';
+}
+
+function clearRouteForm() {
+  document.getElementById('route-departure').value   = '';
+  document.getElementById('route-destination').value = '';
+  document.getElementById('route-vehicle').value     = '';
+  document.getElementById('price-no-ac').value       = '';
+  document.getElementById('price-ac').value          = '';
+  document.getElementById('route-ac').checked        = false;
+  document.getElementById('route-seats-val').textContent = '—';
+  selectedRouteId = null;
+  document.querySelectorAll('#route-tbody tr').forEach(r => r.classList.remove('selected'));
+}
+
+async function saveRoute() {
+  const departure   = document.getElementById('route-departure').value.trim();
+  const destination = document.getElementById('route-destination').value.trim();
+  const vehicleId   = document.getElementById('route-vehicle').value;
+  const priceNoAc   = parseFloat(document.getElementById('price-no-ac').value) || null;
+  const priceAc     = parseFloat(document.getElementById('price-ac').value) || null;
+
+  if (!departure || !destination || !vehicleId) {
+    toast('Fill in departure, destination and vehicle', 'error');
+    return;
+  }
+  if (!priceNoAc && !priceAc) {
+    toast('Enter at least one price', 'error');
+    return;
+  }
+
+  try {
+    // Resolve or create places
+    let places = DBConfig.getPlaces();
+    let dep  = places.find(p => p.name.toLowerCase() === departure.toLowerCase());
+    let dest = places.find(p => p.name.toLowerCase() === destination.toLowerCase());
+
+    if (!dep)  { await DBConfig.addPlace(departure);   places = DBConfig.getPlaces(); dep  = places.find(p => p.name.toLowerCase() === departure.toLowerCase()); }
+    if (!dest) { await DBConfig.addPlace(destination); places = DBConfig.getPlaces(); dest = places.find(p => p.name.toLowerCase() === destination.toLowerCase()); }
+
+    await DBConfig.saveRoute({
+      departureId:   dep.id,
+      destinationId: dest.id,
+      vehicleId:     parseInt(vehicleId),
+      priceAc,
+      priceNoAc,
+    });
+
+    toast('Route saved (both directions)', 'success');
+    clearRouteForm();
+    renderRoutes();
+    renderPlacesDatalist();
+  } catch (e) {
+    toast(e.message, 'error');
+  }
+}
+
+function renderRoutes() {
+  const tbody  = document.getElementById('route-tbody');
+  const empty  = document.getElementById('route-empty');
+  const routes = DBConfig.getRoutes();
+
+  // De-dupe: show only one row per unique pair+vehicle (not both directions)
+  const seen = new Set();
+  const deduped = routes.filter(r => {
+    const key = [Math.min(r.departure_id, r.destination_id),
+                 Math.max(r.departure_id, r.destination_id),
+                 r.vehicle_id].join('-');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+
+  tbody.innerHTML = '';
+  if (!deduped.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  deduped.forEach(r => {
+    const tr = document.createElement('tr');
+    if (r.id === selectedRouteId) tr.classList.add('selected');
+    tr.innerHTML = `
+      <td>${r.departure}</td>
+      <td>${r.destination}</td>
+      <td><span class="chip">${r.vehicle_type} <span style="color:var(--muted)">${r.capacity}</span></span></td>
+      <td class="price-cell">${r.price_no_ac ? fmt(r.price_no_ac) : '<span class="price-na">—</span>'}</td>
+      <td class="price-cell">${r.price_ac    ? fmt(r.price_ac)   : '<span class="price-na">—</span>'}</td>
+      <td>
+        <button class="btn-danger btn-sm" onclick="deleteRoute(${r.id}, event)">✕</button>
+      </td>`;
+    tr.onclick = () => loadRouteToForm(r);
+    tbody.appendChild(tr);
+  });
+}
+
+function loadRouteToForm(r) {
+  selectedRouteId = r.id;
+  document.getElementById('route-departure').value   = r.departure;
+  document.getElementById('route-destination').value = r.destination;
+  document.getElementById('route-vehicle').value     = r.vehicle_id;
+  document.getElementById('route-seats-val').textContent = r.capacity;
+  document.getElementById('price-no-ac').value       = r.price_no_ac || '';
+  document.getElementById('price-ac').value          = r.price_ac    || '';
+  document.getElementById('route-ac').checked        = !!r.price_ac;
+  document.querySelectorAll('#route-tbody tr').forEach(row => row.classList.remove('selected'));
+  document.getElementById('sec-routes').classList.add('open');
+  document.getElementById('route-departure').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  renderRoutes();
+}
+
+async function deleteRoute(id, e) {
+  e.stopPropagation();
+  if (!confirm('Delete this route and its reverse?')) return;
+  try {
+    await DBConfig.deleteRoute(id);
+    toast('Route deleted', 'success');
+    renderRoutes();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+}
+
+
+/* ── Theme toggle ───────────────────────────────────────────────────── */
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('manifest-theme', isLight ? 'light' : 'dark');
+}
+function loadTheme() {
+  if (localStorage.getItem('manifest-theme') === 'light') {
+    document.documentElement.classList.add('light');
+  }
+}
+loadTheme();
+
+/* ── Init ───────────────────────────────────────────────────────────── */
+async function init() {
+  try {
+    await DB.init({
+      locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${file}`
+    });
+    renderCompany();
+    renderVehicles();
+    renderRoutes();
+  } catch (e) {
+    console.error(e);
+    document.getElementById('db-loader').querySelector('p').textContent = 'ERROR: ' + e.message;
+    return;
+  }
+
+  // Hide loader
+  const loader = document.getElementById('db-loader');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.remove(), 400);
+}
+
+init();
+</script>
+</body>
+</html>

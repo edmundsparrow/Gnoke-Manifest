@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Manifest — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Tokens ─────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:           #0f1117;
+      --surface:      #1a1d27;
+      --surface2:     #22263a;
+      --border:       #2a2f45;
+      --amber:        #f59e0b;
+      --amber-dim:    #b37200;
+      --amber-glow:   rgba(245,158,11,0.12);
+      --text:         #e8eaf0;
+      --muted:        #6b7280;
+      --success:      #10b981;
+      --danger:       #ef4444;
+      --radius:       6px;
+      --nav-h:        60px;
+      --font-mono:    'DM Mono', monospace;
+      --font-sans:    'DM Sans', sans-serif;
+    }
+
+    :root.light {
+      --bg:         #f4f5f7;
+      --surface:    #ffffff;
+      --surface2:   #eef0f4;
+      --border:     #dde0e8;
+      --text:       #1a1d27;
+      --muted:      #8a92a0;
+      --amber-glow: rgba(180,110,0,0.08);
+    }
+
+    html { font-size: 15px; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: calc(var(--nav-h) + 16px);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Page header ─────────────────────────────────────────────────── */
+    .page-header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .page-header h1 {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .page-header .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--amber);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Search / load bar ───────────────────────────────────────────── */
+    .search-bar {
+      margin: 12px;
+      display: flex;
+      gap: 8px;
+    }
+    .search-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      padding: 10px 12px;
+      outline: none;
+      letter-spacing: 0.06em;
+      transition: border-color 0.15s;
+    }
+    .search-bar input:focus { border-color: var(--amber); }
+    .search-bar input::placeholder { color: var(--muted); font-family: var(--font-sans); letter-spacing: 0; }
+
+    /* ── Action buttons ──────────────────────────────────────────────── */
+    .action-bar {
+      margin: 0 12px 12px;
+      display: flex;
+      gap: 8px;
+    }
+    button {
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    button:active { transform: scale(0.97); }
+    .btn-ghost {
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+    .btn-primary {
+      background: var(--amber);
+      color: #0f1117;
+    }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-icon {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 9px 12px;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .btn-icon:hover { color: var(--amber); border-color: var(--amber); }
+
+    /* ── Empty / error states ────────────────────────────────────────── */
+    .state-panel {
+      margin: 40px 12px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .state-panel .icon {
+      font-size: 2.4rem;
+      margin-bottom: 10px;
+      opacity: 0.4;
+    }
+    .state-panel p {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       MANIFEST CARD — the printable document
+    ═══════════════════════════════════════════════════════════════════ */
+    #manifest-card {
+      margin: 0 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    /* ── Manifest header ─────────────────────────────────────────────── */
+    .mf-header {
+      background: var(--amber);
+      padding: 16px 18px 14px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .mf-header-left {}
+    .mf-company {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.5);
+      margin-bottom: 4px;
+    }
+    .mf-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #0f1117;
+      letter-spacing: -0.01em;
+    }
+    .mf-header-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+    .mf-code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: rgba(0,0,0,0.5);
+      letter-spacing: 0.08em;
+      margin-bottom: 3px;
+    }
+    .mf-code-val {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #0f1117;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── Route banner ────────────────────────────────────────────────── */
+    .mf-route {
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .mf-route-cities {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .mf-city {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    .mf-city small {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      font-weight: 400;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+    }
+    .mf-arrow {
+      color: var(--amber);
+      font-size: 1.1rem;
+    }
+    .mf-route-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .mf-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--text);
+    }
+    .mf-badge.ac-on {
+      border-color: var(--amber);
+      color: var(--amber);
+      background: var(--amber-glow);
+    }
+    .mf-fare {
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--amber);
+    }
+
+    /* ── Info grid ───────────────────────────────────────────────────── */
+    .mf-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 1px solid var(--border);
+    }
+    .mf-info-cell {
+      padding: 12px 18px;
+      border-right: 1px solid var(--border);
+    }
+    .mf-info-cell:nth-child(even) { border-right: none; }
+    .mf-info-cell:nth-child(n+3)  { border-top: 1px solid var(--border); }
+    .mf-info-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+    .mf-info-val {
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+    .mf-info-val.mono {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    /* ── Passenger table ─────────────────────────────────────────────── */
+    .mf-pax-header {
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+    }
+    .mf-pax-title {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .mf-pax-count {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--amber);
+    }
+
+    .mf-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .mf-table thead th {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 8px 18px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .mf-table thead th:first-child { width: 36px; text-align: center; }
+    .mf-table tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.1s;
+    }
+    .mf-table tbody tr:last-child { border-bottom: none; }
+    .mf-table tbody td {
+      padding: 11px 18px;
+      font-size: 0.86rem;
+    }
+    .mf-table tbody td:first-child {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .mf-table .td-name { font-weight: 500; }
+    .mf-table .td-phone {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    .mf-table .td-gender {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .mf-table .td-gender.male   { color: #60a5fa; }
+    .mf-table .td-gender.female { color: #f472b6; }
+
+    /* ── Seat capacity bar ───────────────────────────────────────────── */
+    .mf-capacity {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .cap-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+    .cap-bar {
+      flex: 1;
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .cap-fill {
+      height: 100%;
+      background: var(--amber);
+      border-radius: 3px;
+      transition: width 0.4s ease;
+    }
+    .cap-fill.full { background: var(--danger); }
+    .cap-count {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Manifest footer ─────────────────────────────────────────────── */
+    .mf-footer {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mf-footer-date {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--muted);
+    }
+    .mf-footer-total {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--success);
+    }
+
+    /* ── Toast ───────────────────────────────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: calc(var(--nav-h) + 12px);
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 18px;
+      font-size: 0.82rem;
+      color: var(--text);
+      opacity: 0;
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--success); color: var(--success); }
+    #toast.error   { border-color: var(--danger);  color: var(--danger);  }
+
+    /* ── Bottom nav ──────────────────────────────────────────────────── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: stretch;
+      z-index: 20;
+    }
+    .bottom-nav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      gap: 3px;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      transition: color 0.15s;
+      position: relative;
+    }
+    .bottom-nav a .nav-icon { font-size: 1.1rem; line-height: 1; }
+    .bottom-nav a:hover { color: var(--text); }
+    .bottom-nav a.active { color: var(--amber); }
+    .bottom-nav a.active::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 20%; right: 20%;
+      height: 2px;
+      background: var(--amber);
+      border-radius: 0 0 3px 3px;
+    }
+
+    /* ── DB loader ───────────────────────────────────────────────────── */
+    #db-loader {
+      position: fixed; inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      z-index: 200;
+      transition: opacity 0.3s;
+    }
+    #db-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-ring {
+      width: 36px; height: 36px;
+      border: 2px solid var(--border);
+      border-top-color: var(--amber);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    #db-loader p {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────────────── */
+    @media (min-width: 600px) {
+      #manifest-card,
+      .search-bar,
+      .action-bar { margin-left: auto; margin-right: auto; max-width: 560px; }
+      .page-header { justify-content: center; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════
+       PRINT STYLES — clean black-on-white document
+    ═══════════════════════════════════════════════════════════════════ */
+    @media print {
+      :root {
+        --bg:       #fff;
+        --surface:  #fff;
+        --surface2: #f5f5f5;
+        --border:   #ddd;
+        --text:     #000;
+        --muted:    #555;
+        --amber:    #000;
+        --amber-glow: transparent;
+      }
+
+      body {
+        background: #fff;
+        padding-bottom: 0;
+        font-size: 13px;
+      }
+
+      .page-header,
+      .search-bar,
+      .action-bar,
+      .bottom-nav,
+      #db-loader,
+      #toast,
+      .state-panel { display: none !important; }
+
+      #manifest-card {
+        margin: 0;
+        border: 1px solid #ccc;
+        border-radius: 0;
+        max-width: 100%;
+        page-break-inside: avoid;
+      }
+
+      .mf-header { background: #000; }
+      .mf-title, .mf-company, .mf-code { color: #fff !important; }
+      .mf-code-val { color: #fff !important; }
+
+      .mf-table tbody tr:hover { background: transparent; }
+      .mf-table .td-gender.male,
+      .mf-table .td-gender.female { color: #000; }
+
+      .mf-city small { color: #555; }
+
+      .cap-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- DB loader -->
+<div id="db-loader">
+  <div class="loader-ring"></div>
+  <p>LOADING DATABASE...</p>
+</div>
+
+<!-- Page header -->
+<header class="page-header">
+  <div class="dot"></div>
+  <h1>Manifest</h1>
+  <div style="margin-left:auto;display:flex;gap:8px">
+    <button onclick="toggleTheme()" title="Toggle theme" style="background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:4px 10px;font-size:1rem;line-height:1;cursor:pointer">&#9680;</button>
+  </div>
+</header>
+
+<!-- Search bar -->
+<div class="search-bar">
+  <input type="text" id="searchInput"
+    placeholder="Enter booking code (e.g. TRP-20250420-AB3F)"
+    autocomplete="off"
+    autocapitalize="characters"
+    spellcheck="false" />
+  <button class="btn-primary" onclick="loadManifest()">Load</button>
+</div>
+
+<!-- Action buttons (shown when manifest is loaded) -->
+<div class="action-bar" id="actionBar" style="display:none">
+  <button class="btn-ghost" onclick="window.print()">🖨 Print</button>
+  <button class="btn-ghost" onclick="shareManifest()">↗ Share</button>
+  <button class="btn-icon" onclick="clearManifest()" title="Clear">✕</button>
+</div>
+
+<!-- Empty state -->
+<div class="state-panel" id="emptyState">
+  <div class="icon">◫</div>
+  <p>ENTER BOOKING CODE TO LOAD MANIFEST</p>
+</div>
+
+<!-- Error state -->
+<div class="state-panel" id="errorState" style="display:none">
+  <div class="icon">⊘</div>
+  <p id="errorMsg">BOOKING CODE NOT FOUND</p>
+</div>
+
+<!-- ── Manifest card ─────────────────────────────────────────────────── -->
+<div id="manifest-card" style="display:none">
+
+  <!-- Header -->
+  <div class="mf-header">
+    <div class="mf-header-left">
+      <div class="mf-company" id="mf-company">Company Name</div>
+      <div class="mf-title">Travel Manifest</div>
+    </div>
+    <div class="mf-header-right">
+      <div class="mf-code">BOOKING CODE</div>
+      <div class="mf-code-val" id="mf-code">—</div>
+    </div>
+  </div>
+
+  <!-- Route -->
+  <div class="mf-route">
+    <div class="mf-route-cities">
+      <div class="mf-city">
+        <span id="mf-departure">—</span>
+        <small id="mf-departure-state"></small>
+      </div>
+      <div class="mf-arrow">→</div>
+      <div class="mf-city">
+        <span id="mf-destination">—</span>
+        <small id="mf-destination-state"></small>
+      </div>
+    </div>
+    <div class="mf-route-meta">
+      <span class="mf-badge" id="mf-ac-badge">NO AC</span>
+      <span class="mf-fare" id="mf-fare">—</span>
+    </div>
+  </div>
+
+  <!-- Info grid: vehicle + driver -->
+  <div class="mf-info-grid">
+    <div class="mf-info-cell">
+      <div class="mf-info-label">Vehicle Type</div>
+      <div class="mf-info-val" id="mf-vehicle-type">—</div>
+    </div>
+    <div class="mf-info-cell">
+      <div class="mf-info-label">Vehicle No.</div>
+      <div class="mf-info-val mono" id="mf-vehicle-no">—</div>
+    </div>
+    <div class="mf-info-cell">
+      <div class="mf-info-label">Driver</div>
+      <div class="mf-info-val" id="mf-driver">—</div>
+    </div>
+    <div class="mf-info-cell">
+      <div class="mf-info-label">Driver Phone</div>
+      <div class="mf-info-val mono" id="mf-driver-phone">—</div>
+    </div>
+  </div>
+
+  <!-- Passenger table -->
+  <div class="mf-pax-header">
+    <span class="mf-pax-title">Passenger List</span>
+    <span class="mf-pax-count" id="mf-pax-count">0 passengers</span>
+  </div>
+
+  <table class="mf-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Gender</th>
+      </tr>
+    </thead>
+    <tbody id="mf-pax-tbody"></tbody>
+  </table>
+
+  <!-- Capacity bar -->
+  <div class="mf-capacity">
+    <span class="cap-label">CAPACITY</span>
+    <div class="cap-bar">
+      <div class="cap-fill" id="cap-fill"></div>
+    </div>
+    <span class="cap-count" id="cap-count">0/0</span>
+  </div>
+
+  <!-- Footer -->
+  <div class="mf-footer">
+    <span class="mf-footer-date" id="mf-date">—</span>
+    <span class="mf-footer-total" id="mf-total">—</span>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <a href="main.html">
+    <span class="nav-icon">⊞</span>Booking
+  </a>
+  <a href="preview.html" class="active">
+    <span class="nav-icon">◫</span>Manifest
+  </a>
+  <a href="history.html">
+    <span class="nav-icon">◷</span>History
+  </a>
+  <a href="config.html">
+    <span class="nav-icon">⚙</span>Config
+  </a>
+  <a href="help.html">
+    <span class="nav-icon">?</span>Help
+  </a>
+</nav>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/sql-wasm.js"></script>
+<script src="scripts/db-core.js"></script>
+<script src="scripts/db-manifest.js"></script>
+
+<script>
+/* ── Theme ──────────────────────────────────────────────────────────── */
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('manifest-theme', isLight ? 'light' : 'dark');
+}
+(function loadTheme() {
+  if (localStorage.getItem('manifest-theme') === 'light')
+    document.documentElement.classList.add('light');
+})();
+
+/* ── Utils ──────────────────────────────────────────────────────────── */
+const fmt = n => n != null ? `₦${Number(n).toLocaleString('en-NG')}` : '—';
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-NG', {
+    dateStyle: 'medium', timeStyle: 'short'
+  });
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────── */
+let _tt;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `show ${type}`;
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.className = '', 2600);
+}
+
+/* ── State helpers ──────────────────────────────────────────────────── */
+function showEmpty()  {
+  document.getElementById('emptyState').style.display    = '';
+  document.getElementById('errorState').style.display    = 'none';
+  document.getElementById('manifest-card').style.display = 'none';
+  document.getElementById('actionBar').style.display     = 'none';
+}
+
+function showError(msg) {
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('errorState').style.display    = '';
+  document.getElementById('errorMsg').textContent        = msg;
+  document.getElementById('manifest-card').style.display = 'none';
+  document.getElementById('actionBar').style.display     = 'none';
+}
+
+function showManifest() {
+  document.getElementById('emptyState').style.display    = 'none';
+  document.getElementById('errorState').style.display    = 'none';
+  document.getElementById('manifest-card').style.display = '';
+  document.getElementById('actionBar').style.display     = 'flex';
+}
+
+/* ── Load & render ──────────────────────────────────────────────────── */
+function loadManifest() {
+  const code = document.getElementById('searchInput').value.trim().toUpperCase();
+  if (!code) { toast('Enter a booking code', 'error'); return; }
+  renderManifest(code);
+}
+
+function clearManifest() {
+  document.getElementById('searchInput').value = '';
+  showEmpty();
+}
+
+function renderManifest(code) {
+  const m = DBManifest.getManifest(code);
+  if (!m) { showError(`NO MANIFEST FOUND FOR  "${code}"`); return; }
+
+  // Header
+  document.getElementById('mf-company').textContent  = m.company || 'Travel Manifest';
+  document.getElementById('mf-code').textContent     = m.booking_code;
+
+  // Route
+  document.getElementById('mf-departure').textContent   = m.departure;
+  document.getElementById('mf-destination').textContent = m.destination;
+
+  // State context under city names (if available)
+  const depState  = DB.query(`
+    SELECT s.name FROM places p
+    LEFT JOIN states s ON p.state_id = s.id
+    WHERE p.name = ? COLLATE NOCASE LIMIT 1
+  `, [m.departure])[0];
+  const destState = DB.query(`
+    SELECT s.name FROM places p
+    LEFT JOIN states s ON p.state_id = s.id
+    WHERE p.name = ? COLLATE NOCASE LIMIT 1
+  `, [m.destination])[0];
+
+  document.getElementById('mf-departure-state').textContent  = depState?.name  || '';
+  document.getElementById('mf-destination-state').textContent = destState?.name || '';
+
+  // AC badge + fare
+  const acBadge = document.getElementById('mf-ac-badge');
+  if (m.has_ac) {
+    acBadge.textContent = 'AC';
+    acBadge.className   = 'mf-badge ac-on';
+  } else {
+    acBadge.textContent = 'NO AC';
+    acBadge.className   = 'mf-badge';
+  }
+  document.getElementById('mf-fare').textContent = fmt(m.fare);
+
+  // Vehicle + driver
+  document.getElementById('mf-vehicle-type').textContent = m.vehicle_type;
+  document.getElementById('mf-vehicle-no').textContent   = m.vehicle_no;
+  document.getElementById('mf-driver').textContent       = m.driver_name;
+  document.getElementById('mf-driver-phone').textContent = m.driver_phone;
+
+  // Passengers
+  const tbody = document.getElementById('mf-pax-tbody');
+  tbody.innerHTML = '';
+  m.passengers.forEach((p, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td class="td-name">${p.name}</td>
+      <td class="td-phone">${p.phone || '—'}</td>
+      <td class="td-gender ${p.gender}">${p.gender || '—'}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const paxCount = m.passengers.length;
+  document.getElementById('mf-pax-count').textContent =
+    `${paxCount} passenger${paxCount !== 1 ? 's' : ''}`;
+
+  // Capacity bar
+  const pct  = m.capacity ? Math.round((paxCount / m.capacity) * 100) : 0;
+  const fill = document.getElementById('cap-fill');
+  fill.style.width = `${pct}%`;
+  fill.className   = `cap-fill${pct === 100 ? ' full' : ''}`;
+  document.getElementById('cap-count').textContent = `${paxCount}/${m.capacity}`;
+
+  // Footer
+  document.getElementById('mf-date').textContent = fmtDate(m.booked_at);
+  const total = m.fare ? fmt(m.fare * paxCount) : '—';
+  document.getElementById('mf-total').textContent = `Total: ${total}`;
+
+  showManifest();
+}
+
+/* ── Share ──────────────────────────────────────────────────────────── */
+async function shareManifest() {
+  const code = document.getElementById('mf-code').textContent;
+  if (!code || code === '—') return;
+
+  const m    = DBManifest.getManifest(code);
+  if (!m)    return;
+
+  const lines = [
+    `TRAVEL MANIFEST — ${m.booking_code}`,
+    `Route: ${m.departure} → ${m.destination}`,
+    `Vehicle: ${m.vehicle_type}  |  No: ${m.vehicle_no}`,
+    `Driver: ${m.driver_name}  ${m.driver_phone}`,
+    `Date: ${fmtDate(m.booked_at)}`,
+    ``,
+    `PASSENGERS (${m.passengers.length}/${m.capacity}):`,
+    ...m.passengers.map((p, i) =>
+      `${i + 1}. ${p.name}  ${p.phone}  (${p.gender})`
+    ),
+    ``,
+    `Fare: ${fmt(m.fare)} × ${m.passengers.length} = ${fmt(m.fare * m.passengers.length)}`,
+  ];
+
+  const text = lines.join('\n');
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Travel Manifest', text });
+    } catch (e) { /* user cancelled */ }
+  } else {
+    await navigator.clipboard.writeText(text);
+    toast('Manifest copied to clipboard', 'success');
+  }
+}
+
+/* ── Search on Enter ────────────────────────────────────────────────── */
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') loadManifest();
+});
+
+/* ── Init ───────────────────────────────────────────────────────────── */
+async function init() {
+  try {
+    await DB.init({
+      locateFile: f => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.10.2/${f}`
+    });
+
+    // Check URL param first (arriving from history page)
+    const urlCode = new URLSearchParams(window.location.search).get('code');
+    if (urlCode) {
+      document.getElementById('searchInput').value = urlCode;
+      renderManifest(urlCode);
+    } else {
+      // Auto-load the latest manifest
+      const latest = DBManifest.getLatestManifest();
+      if (latest) {
+        document.getElementById('searchInput').value = latest.booking_code;
+        renderManifest(latest.booking_code);
+      } else {
+        showEmpty();
+      }
+    }
+
+  } catch (e) {
+    document.getElementById('db-loader').querySelector('p').textContent = 'ERROR: ' + e.message;
+    return;
+  }
+
+  const loader = document.getElementById('db-loader');
+  loader.classList.add('hidden');
+  setTimeout(() => loader.remove(), 400);
+}
+
+init();
+</script>
+</body>
+</html>
